@@ -1,0 +1,360 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>TypingCore-style Lesson</title>
+<style>
+  :root{
+    --bg:#071026; --panel:#0f1724; --muted:#94a3b8; --accent:#60a5fa; --good:#16a34a; --bad:#ef4444;
+  }
+  *{box-sizing:border-box}
+  body{
+    margin:0;background:linear-gradient(180deg,#020617 0%,#06112a 100%);color:#e6eef8;font-family:Inter,ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,Arial;
+    padding:28px;display:flex;justify-content:center;
+  }
+  .card{
+    width:100%;max-width:980px;background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+    border-radius:12px;padding:18px;box-shadow:0 10px 40px rgba(2,6,23,0.6);
+  }
+  header{display:flex;align-items:center;gap:14px}
+  h1{margin:0;font-size:20px}
+  .controls{display:flex;gap:10px;margin-top:12px;flex-wrap:wrap}
+  textarea#custom{flex:1;min-height:110px;padding:12px;border-radius:10px;background:#0b1220;border:1px solid rgba(255,255,255,0.03);color:inherit;font-size:15px;resize:vertical}
+  button{background:var(--accent);border:none;color:#042033;padding:10px 14px;border-radius:8px;cursor:pointer;font-weight:700}
+  button.secondary{background:transparent;border:1px solid rgba(255,255,255,0.04);color:var(--muted);font-weight:600}
+  .typing-area{margin-top:14px;background:var(--panel);padding:18px;border-radius:10px;min-height:160px;overflow:auto;white-space:pre-wrap;line-height:1.9;font-size:18px;outline:none}
+  .char{padding:0 2px;border-radius:3px;}
+  .char.current{background:linear-gradient(90deg,var(--accent), rgba(96,165,250,0.5));color:#001320}
+  .char.correct{color:var(--good)}
+  .char.wrong{color:var(--bad);text-decoration:underline wavy rgba(239,68,68,0.25)}
+  .status{display:flex;gap:12px;align-items:center;margin-top:12px;flex-wrap:wrap}
+  .stat{background:rgba(255,255,255,0.02);padding:10px;border-radius:8px;min-width:120px}
+  .label{font-size:12px;color:var(--muted)}
+  .value{font-weight:800;font-size:18px}
+  .progress-wrap{margin-top:12px}
+  .progress-bg{height:10px;background:rgba(255,255,255,0.03);border-radius:999px;overflow:hidden}
+  .progress-bar{height:100%;background:linear-gradient(90deg,var(--accent), #7dd3fc);width:0%;transition:width .18s linear}
+  .footer{display:flex;justify-content:space-between;align-items:center;margin-top:14px;gap:12px;flex-wrap:wrap}
+  .popup{position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);background:var(--panel);padding:20px;border-radius:10px;box-shadow:0 10px 40px rgba(2,6,23,0.6);z-index:60;display:none;min-width:300px}
+  .popup h2{margin:0 0 8px}
+  .small{font-size:13px;color:var(--muted)}
+  @media(max-width:720px){.stat{min-width:100px}}
+</style>
+</head>
+<body>
+  <div class="card" role="main" aria-labelledby="title">
+    <header>
+      <h1 id="title">TypingCore-style Lesson — Custom Practice</h1>
+    </header>
+
+    <div class="controls" aria-label="controls">
+      <textarea id="custom" aria-label="Custom practice text">
+asdf jkl; asdf jkl; sad dad das add sad dad das ;lkj kl;j sadf add sad dad das afds sfda fsda asdf jkl; asdf jkl; dsfa adsf adfs kjl; ;jkl dsaf klj; dafs jlk; fdsa sad dad das sfda fsda asdf jkl; asdf jkl; dsfa adsf adfs kjl; ;jkl dsaf klj; dafs jlk; fdsa sad dad das sfda fsda asdf jkl; asdf jkl; dsfa adsf adfs kjl; ;jkl dsaf klj; dafs jlk; fdsa sad dad das afds asdf jkl; asdf asdf jkl; asdf jkl; afds asdf jkl; dsaf klj; dafs jlk; asdf jkl; asdf asdf jkl; afds asdf jkl; asdf asdf jkl; asdf jkl; afds asdf jkl; dsaf klj; dafs jlk; asdf jkl; asdf asdf jkl;afds asdf jkl; asdf asdf jkl; asdf jkl; afds asdf jkl; dsaf klj; dafs jlk; asdf jkl; asdf asdf jkl; asdf jkl; sad dad das add sad dad sfda fsda asdf jkl; asdf jkl; dsfa adsf adfs kjl; ;jkl ;jkl dsaf klj; dafs jlk; fdsa sad dad das afds asdf jkl; asdf asdf jkl; asdf jkl; afds asdf jkl; dsaf klj; dafs jlk; asdf jkl; asdf asdf jkl; afds asdf jkl; asdf asdf jkl; asdf jkl; afds asdf jkl; dsaf klj; dafs jlk; asdf jkl; asdf asdf
+      </textarea>
+
+      <div style="display:flex;flex-direction:column;gap:8px;min-width:220px">
+        <div style="display:flex;gap:8px">
+          <button id="loadBtn" title="Load practice text">Load text</button>
+          <button id="restartBtn" class="secondary" title="Restart current text">Restart</button>
+        </div>
+        <div style="display:flex;gap:8px">
+          <button id="shuffleBtn" class="secondary" title="Shuffle words">Shuffle</button>
+          <button id="selectAllBtn" class="secondary" title="Select all text">Select all</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="typingArea" class="typing-area" tabindex="0" role="textbox" aria-multiline="true" aria-label="Typing area">
+      <!-- rendered text spans go here -->
+    </div>
+
+    <div class="progress-wrap" aria-hidden="false">
+      <div class="progress-bg"><div id="progressBar" class="progress-bar"></div></div>
+    </div>
+
+    <div class="status" role="status" aria-live="polite">
+      <div class="stat"><div class="label">Time</div><div class="value" id="time">00:00</div><div class="small">starts on first key</div></div>
+      <div class="stat"><div class="label">WPM</div><div class="value" id="wpm">0</div></div>
+      <div class="stat"><div class="label">Accuracy</div><div class="value" id="acc">100%</div></div>
+      <div class="stat"><div class="label">Progress</div><div class="value" id="pct">0%</div></div>
+    </div>
+
+    <div class="footer">
+      <div class="small">Tip: Click the typing area and start typing. Use Backspace to correct mistakes. Keys like Tab/Alt/Ctrl are ignored.</div>
+      <div>
+        <button id="copyRes" class="secondary" title="Copy current text">Copy text</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="popup" class="popup" role="dialog" aria-modal="true" aria-hidden="true">
+    <h2>🎉 Lesson Completed</h2>
+    <div id="summary" class="small" style="margin-top:8px"></div>
+    <div style="margin-top:12px;display:flex;gap:8px;justify-content:center">
+      <button id="closePopup">Close</button>
+      <button id="replayBtn" class="secondary">Try again</button>
+    </div>
+  </div>
+
+<script>
+/* TypingCore-like lesson with correct/wrong highlighting and backspace handling.
+   - Render each char as <span class="char">, data-char holds original.
+   - Keystrokes compared to expected char.
+   - Backspace undoes last typed char and updates counts.
+   - Timer starts on first real keystroke.
+*/
+
+const custom = document.getElementById('custom');
+const loadBtn = document.getElementById('loadBtn');
+const restartBtn = document.getElementById('restartBtn');
+const shuffleBtn = document.getElementById('shuffleBtn');
+const selectAllBtn = document.getElementById('selectAllBtn');
+const typingArea = document.getElementById('typingArea');
+const progressBar = document.getElementById('progressBar');
+const timeEl = document.getElementById('time');
+const wpmEl = document.getElementById('wpm');
+const accEl = document.getElementById('acc');
+const pctEl = document.getElementById('pct');
+const popup = document.getElementById('popup');
+const summary = document.getElementById('summary');
+const closePopup = document.getElementById('closePopup');
+const replayBtn = document.getElementById('replayBtn');
+const copyRes = document.getElementById('copyRes');
+
+let spans = [];
+let text = '';
+let pos = 0;
+let started = false;
+let startTs = 0;
+let timer = null;
+let correct = 0;
+let typed = 0;
+let finished = false;
+
+// helper: convert Enter to newline and Tab to \t when comparing
+function normalizeKey(k){
+  if (k === 'Enter') return '\n';
+  if (k === 'Tab') return '\t';
+  return k;
+}
+
+// render the provided text into spans
+function render(t){
+  typingArea.innerHTML = '';
+  spans = [];
+  for (let i=0;i<t.length;i++){
+    const ch = t[i];
+    const sp = document.createElement('span');
+    sp.className = 'char';
+    sp.dataset.char = ch;
+    // show spaces visibly (still as normal space)
+    sp.textContent = ch;
+    // block for newline so it flows as line break
+    if (ch === '\n') sp.style.display = 'block';
+    typingArea.appendChild(sp);
+    spans.push(sp);
+  }
+  pos = 0;
+  if (spans[0]) spans[0].classList.add('current');
+  updateProgress();
+  scrollIntoView();
+}
+
+// start timer
+function startTimerIfNeeded(){
+  if (started) return;
+  started = true;
+  startTs = Date.now();
+  timer = setInterval(updateStats, 250);
+}
+
+// stop timer
+function stopTimer(){
+  started = false;
+  if (timer){ clearInterval(timer); timer = null; }
+}
+
+// update stats shown
+function updateStats(){
+  const elapsed = started ? (Date.now() - startTs) / 1000 : 0;
+  const mm = Math.floor(elapsed/60).toString().padStart(2,'0');
+  const ss = Math.floor(elapsed%60).toString().padStart(2,'0');
+  timeEl.textContent = `${mm}:${ss}`;
+  const minutes = Math.max(elapsed/60, 1/60); // avoid div by zero
+  const wpm = Math.round((correct/5) / minutes);
+  wpmEl.textContent = isFinite(wpm) ? wpm : 0;
+  const accuracy = typed === 0 ? 100 : Math.round((correct/typed)*100);
+  accEl.textContent = accuracy + '%';
+  updateProgress();
+}
+
+// update progress bar and percent
+function updateProgress(){
+  const pct = spans.length === 0 ? 0 : Math.round((pos / spans.length)*100);
+  progressBar.style.width = pct + '%';
+  pctEl.textContent = pct + '%';
+}
+
+// scroll current into view
+function scrollIntoView(){
+  const cur = spans[pos] || spans[Math.max(0,pos-1)];
+  if (!cur) return;
+  const areaRect = typingArea.getBoundingClientRect();
+  const curRect = cur.getBoundingClientRect();
+  if (curRect.top < areaRect.top || curRect.bottom > areaRect.bottom){
+    typingArea.scrollTo({top: cur.offsetTop - typingArea.clientHeight/2 + cur.clientHeight/2, behavior:'smooth'});
+  }
+}
+
+// handle key press
+function handleKey(e){
+  // ignore when popup open or finished
+  if (popup.style.display === 'block') return;
+  // ignore modifiers / combos
+  if (e.ctrlKey || e.metaKey || e.altKey) return;
+
+  // only process printable characters and Backspace, Enter, Tab, Space
+  const key = e.key;
+  if (key === 'Shift') return;
+
+  // start timer for any real key except modifiers
+  if (!started && (key.length === 1 || key === 'Backspace' || key === 'Enter' || key === 'Tab' || key === ' ')) startTimerIfNeeded();
+
+  // Prevent default for space to avoid page scroll
+  if (key === ' ' || key === 'Backspace' || key === 'Tab' || key === 'Enter') e.preventDefault();
+
+  if (key === 'Backspace'){
+    if (pos === 0) return;
+    // move back
+    // remove current highlight
+    if (spans[pos]) spans[pos].classList.remove('current');
+    pos--;
+    const sp = spans[pos];
+    // if it was marked correct, decrement correct, and typed always reduced by 1
+    if (sp.dataset.mark === '1') correct = Math.max(0, correct - 1);
+    if (sp.dataset.mark) { typed = Math.max(0, typed - 1); delete sp.dataset.mark; }
+    sp.classList.remove('correct','wrong');
+    sp.classList.add('current');
+    updateStats();
+    scrollIntoView();
+    finished = false;
+    return;
+  }
+
+  // if at end already, ignore extra keys
+  if (pos >= spans.length) return;
+
+  const expected = spans[pos].dataset.char;
+  const typedKey = normalizeKey(key);
+
+  // For regular single char keys, the event gives the exact char (including space)
+  // Compare typedKey to expected (both strings)
+  const isCorrect = typedKey === expected;
+
+  // mark span
+  spans[pos].classList.remove('current');
+  if (isCorrect){
+    spans[pos].classList.add('correct');
+    spans[pos].dataset.mark = '1';
+    correct++;
+  } else {
+    spans[pos].classList.add('wrong');
+    spans[pos].dataset.mark = '0';
+    // record typed even when wrong
+  }
+  typed++;
+
+  pos++;
+  if (pos < spans.length){
+    spans[pos].classList.add('current');
+  } else {
+    // finished
+    stopTimer();
+    finished = true;
+    showPopupSummary();
+  }
+
+  updateStats();
+  scrollIntoView();
+}
+
+// show completion popup summary
+function showPopupSummary(){
+  const elapsed = Math.max(0.001, (Date.now() - startTs)/1000);
+  const minutes = elapsed / 60;
+  const wpm = Math.round((correct/5) / minutes);
+  const accuracy = typed === 0 ? 100 : Math.round((correct/typed)*100);
+  summary.innerHTML = `
+    <div class="small">Time: <strong>${timeEl.textContent}</strong></div>
+    <div class="small">WPM: <strong>${isFinite(wpm)?wpm:0}</strong></div>
+    <div class="small">Accuracy: <strong>${accuracy}%</strong></div>
+    <div class="small">Keystrokes: <strong>${typed}</strong> (correct: ${correct})</div>
+  `;
+  popup.style.display = 'block';
+  popup.setAttribute('aria-hidden','false');
+}
+
+// reset / restart the lesson on current text
+function resetLesson(){
+  stopTimer();
+  started = false;
+  startTs = 0;
+  pos = 0;
+  correct = 0;
+  typed = 0;
+  finished = false;
+  timeEl.textContent = '00:00';
+  wpmEl.textContent = '0';
+  accEl.textContent = '100%';
+  render(text);
+  typingArea.focus();
+}
+
+// load text from textarea
+function loadText(){
+  text = custom.value;
+  // Normalize line endings
+  text = text.replace(/\r\n/g,'\n');
+  resetLesson();
+}
+
+// simple shuffle words utility
+function shuffleWords(){
+  const parts = custom.value.split(/\s+/).filter(Boolean);
+  for (let i = parts.length-1;i>0;i--){
+    const j = Math.floor(Math.random()*(i+1));
+    [parts[i], parts[j]] = [parts[j], parts[i]];
+  }
+  custom.value = parts.join(' ');
+  loadText();
+}
+
+// copy practice text
+function copyText(){
+  navigator.clipboard?.writeText(custom.value).then(()=>{
+    copyRes.textContent = 'Copied!';
+    setTimeout(()=>copyRes.textContent='Copy text',900);
+  }).catch(()=>{ copyRes.textContent='Failed'; setTimeout(()=>copyRes.textContent='Copy text',900); });
+}
+
+// event listeners
+typingArea.addEventListener('keydown', handleKey);
+typingArea.addEventListener('click', ()=> typingArea.focus());
+loadBtn.addEventListener('click', loadText);
+restartBtn.addEventListener('click', resetLesson);
+shuffleBtn.addEventListener('click', shuffleWords);
+selectAllBtn.addEventListener('click', ()=> { custom.select(); custom.focus(); });
+closePopup.addEventListener('click', ()=>{ popup.style.display='none'; popup.setAttribute('aria-hidden','true'); });
+replayBtn.addEventListener('click', ()=>{ popup.style.display='none'; popup.setAttribute('aria-hidden','true'); resetLesson(); });
+copyRes.addEventListener('click', copyText);
+
+// initial load
+window.addEventListener('load', ()=>{
+  loadText();
+  // focus the typing area for convenience
+  setTimeout(()=> typingArea.focus(), 300);
+});
+</script>
+</body>
+</html>
